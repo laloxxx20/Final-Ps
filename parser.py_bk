@@ -1,0 +1,56 @@
+#-*- coding: utf-8 -*-
+import os
+from porter_STEMMER import PorterSTEMMER
+from nltk.stem.snowball import SnowballSTEMMER
+import nltk
+
+
+class Parser:
+    STOP_WORDS_FILE = 'tokens_request.txt'
+
+    STEMMER = None
+    stopwords = []
+
+    def __init__(self, stopwords_io_stream=None):
+        self.STEMMER = SnowballSTEMMER("english", ignore_stopwords=True)
+	# self.STEMMER = PorterSTEMMER()
+
+        if(not stopwords_io_stream):
+             stopwords_io_stream = open(Parser.STOP_WORDS_FILE, 'r')
+
+        self.stopwords = stopwords_io_stream.read().split()
+        print "self.stopwords: ", self.stopwords
+
+        # self.stopwords = nltk.corpus.stopwords.words('english')
+        # print "self.stopwords: ", self.stopwords
+
+    def tokenise_delete_stop_words(self, document_list):
+        if not document_list:
+            return []
+        voca_str = " ".join(document_list)
+        tokenised_vocabulary_list = self.tokenise(voca_str)
+        clean_word_list = self.del_stop_words(tokenised_vocabulary_list)
+        return clean_word_list
+
+    def del_stop_words(self, list):
+        """ Remove common words which have no search value """
+        return [word for word in list if word not in self.stopwords]
+
+    def tokenise(self, string):
+        """ break string up into tokens and stem words """
+        string = self.cln(string)
+        words = string.split(" ")
+        print "crud words: ", words
+        # words = [self.STEMMER.stem(word, 0, len(word)-1) for word in words]
+        # for word in words:
+        #     print self.STEMMER.stem(word)
+        words = [self.STEMMER.stem(word) for word in words]
+        print "steemed words: ", words
+        return words
+
+    def cln(self, string):
+        """ remove any nasty grammar tokens from string """
+        string = string.replace(".", "")
+        string = string.replace("\s+", " ")
+        string = string.lower()
+        return string
